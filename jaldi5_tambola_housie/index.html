@@ -33,8 +33,7 @@
             <p class="text-lg sm:text-xl text-blue-600">Tickets: 6</p>
         </div>
 
-        <!-- The button that links to your Android app via the URL -->
-        <!-- The href will be dynamically updated by JavaScript below -->
+        <!-- The button that links to your Android app via the intent URL -->
         <a 
             id="joinGameButton"
             href="#" 
@@ -44,12 +43,12 @@
         </a>
 
         <p class="mt-6 text-sm text-gray-500">
-            If the app is not installed, this link will open in your browser.
+            If the app is not installed, this link will open in your browser or redirect to the Play Store.
         </p>
     </div>
 
     <script>
-        // JavaScript to dynamically set the button's href and handle Play Store fallback
+        // JavaScript to dynamically set the button's href using intent:// URI with fallback
         document.addEventListener('DOMContentLoaded', () => {
             const joinGameButton = document.getElementById('joinGameButton');
             const urlParams = new URLSearchParams(window.location.search);
@@ -57,39 +56,40 @@
 
             // IMPORTANT: REPLACE 'com.yourcompany.tambola' with your actual Android app's package name
             const appPackageName = "com.jaldi5.housie.bingo"; // e.g., "com.example.tambolafun"
+            
+            // IMPORTANT: Replace with your actual Google Play Store URL for your app
             const playStoreUrl = `https://play.google.com/store/apps/details?id=${appPackageName}`;
             
             // Base URL for your Android App Link (deep link)
+            // This is the URL that your app is configured to handle via intent-filter
             const appLinkBaseUrl = "https://luckeygems.swakaryam.in/jaldi5_tambola_housie";
 
             if (joinGameButton) {
-                let appIntentUrl = appLinkBaseUrl;
+                // Construct the base intent URI
+                // The 'S.browser_fallback_url' is crucial for Play Store redirection
+                let intentUri = `intent://${appLinkBaseUrl.replace('https://', '')}`; // Remove https:// for intent host
+                
+                // Add the data parameter if it exists
                 if (gameData) {
-                    appIntentUrl = `${appLinkBaseUrl}?data=${gameData}`;
+                    // Parameters are added after the path, before intent flags
+                    intentUri += `?data=${encodeURIComponent(gameData)}`;
                 } else {
                     console.warn("No 'data' parameter found in the URL. App link will open without data.");
                 }
 
-                // Set the initial href of the button to the app link URL
-                joinGameButton.href = appIntentUrl;
+                // Add intent flags and fallback URL
+                // scheme=https is important because the original deep link is HTTPS
+                intentUri += `#Intent;` +
+                             `scheme=https;` + // The scheme your app listens for (e.g., 'https', or a custom scheme)
+                             `package=${appPackageName};` + // Your app's package name
+                             `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};` + // The URL to redirect to if app fails to open
+                             `end`;
 
-                // Add a click listener to handle the fallback to Play Store
-                joinGameButton.addEventListener('click', (event) => {
-                    // Start a timer. If the app doesn't take over the screen within this time,
-                    // it suggests the app link failed or the app isn't installed.
-                    const startTime = Date.now();
-                    setTimeout(() => {
-                        // Check if the page is still visible AND if enough time hasn't passed for a successful app launch
-                        // This is a heuristic: if the document is still visible after a short delay, assume app didn't launch.
-                        if (document.visibilityState === 'visible' && (Date.now() - startTime) < 4000) {
-                            window.location.href = playStoreUrl; // Redirect to Play Store
-                        }
-                    }, 2500); // 2.5 seconds delay before checking for fallback
-                });
+                // Set the button's href to the constructed intent URI
+                joinGameButton.href = intentUri;
             }
         });
     </script>
 
 </body>
 </html>
-
