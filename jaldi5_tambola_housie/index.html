@@ -49,27 +49,47 @@
     </div>
 
     <script>
-        // JavaScript to dynamically set the button's href based on URL parameters
+        // JavaScript to dynamically set the button's href and handle Play Store fallback
         document.addEventListener('DOMContentLoaded', () => {
             const joinGameButton = document.getElementById('joinGameButton');
             const urlParams = new URLSearchParams(window.location.search);
             const gameData = urlParams.get('data'); // Get the 'data' parameter from the URL
 
-            if (joinGameButton && gameData) {
-                // Construct the base URL for your app link
-                // const baseUrl = "https://luckeygems.swakaryam.in/jaldi5_tambola_housie";
-                const baseUrl = "luckeygems://jaldi5_tambola_housie";
-                
-                // Set the button's href to include the extracted gameData
-                joinGameButton.href = `${baseUrl}?data=${gameData}`;
-            } else if (joinGameButton) {
-                // If no 'data' parameter is found, provide a fallback or disable the button
-                // For now, it will just link to the base URL without data
-                joinGameButton.href = "https://luckeygems.swakaryam.in/jaldi5_tambola_housie";
-                console.warn("No 'data' parameter found in the URL. Button links to base app URL.");
+            // IMPORTANT: REPLACE 'com.yourcompany.tambola' with your actual Android app's package name
+            const appPackageName = "com.jaldi5.housie.bingo"; // e.g., "com.example.tambolafun"
+            const playStoreUrl = `https://play.google.com/store/apps/details?id=${appPackageName}`;
+            
+            // Base URL for your Android App Link (deep link)
+            const appLinkBaseUrl = "https://luckeygems.swakaryam.in/jaldi5_tambola_housie";
+
+            if (joinGameButton) {
+                let appIntentUrl = appLinkBaseUrl;
+                if (gameData) {
+                    appIntentUrl = `${appLinkBaseUrl}?data=${gameData}`;
+                } else {
+                    console.warn("No 'data' parameter found in the URL. App link will open without data.");
+                }
+
+                // Set the initial href of the button to the app link URL
+                joinGameButton.href = appIntentUrl;
+
+                // Add a click listener to handle the fallback to Play Store
+                joinGameButton.addEventListener('click', (event) => {
+                    // Start a timer. If the app doesn't take over the screen within this time,
+                    // it suggests the app link failed or the app isn't installed.
+                    const startTime = Date.now();
+                    setTimeout(() => {
+                        // Check if the page is still visible AND if enough time hasn't passed for a successful app launch
+                        // This is a heuristic: if the document is still visible after a short delay, assume app didn't launch.
+                        if (document.visibilityState === 'visible' && (Date.now() - startTime) < 4000) {
+                            window.location.href = playStoreUrl; // Redirect to Play Store
+                        }
+                    }, 2500); // 2.5 seconds delay before checking for fallback
+                });
             }
         });
     </script>
 
 </body>
 </html>
+
