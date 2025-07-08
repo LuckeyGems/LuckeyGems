@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.jaldi5.housie.bingo",
+      "sha256_cert_fingerprints": [
+        "FA:D6:24:6E:DA:BE:C6:5F:2F:6D:9F:CE:6C:DA:84:C9:F4:A6:EF:0A:AD:FF:67:F8:DA:ED:7F:A0:B0:0A:EC:FA"
+      ]
+    }
+  }
+]
